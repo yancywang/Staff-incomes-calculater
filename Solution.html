@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+ <!-- Wrote by Yanxiang Wang -->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" type="text/javascript"></script>
+    <script src="https://raw.githubusercontent.com/mholt/PapaParse/master/papaparse.min.js" type="text/javascript"></script>
+
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"  rel="stylesheet">
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+    <style type="text/css">
+    body{
+      background-color: rgb(53,103,135);
+    }
+    </style>
+    <title>员工收入计算器</title>
+  </head>
+  <body>
+    <div class="container" style="position:relative;top:20px;">
+      <div class="well" >
+        <span class="col-md-3">本市职工月平均工资：</span>
+        <input type="file" id="本市职工月平均工资" name="本市职工月平均工资" />
+        <span class="col-md-3">个税税率:</span>
+        <input type="file" id="个税税率" name="个税税率"/>
+        <span class="col-md-3">绩效工资标准:</span>
+        <input type="file" id="绩效工资标准" name="绩效工资标准"/>
+        <span class="col-md-3">五险费率:</span>
+        <input type="file" id="五险费率" name="五险费率"/>
+
+        <hr>
+        <span class="col-md-2">从文件读入员工数据：</span>
+        <input type="file" class="col-md-10" id="员工名单" name="员工名单"/>
+        <p></p>
+        <button type="button" class="btn btn-default" onclick="getStaffInput()"><p>确认</p></button>
+        <hr>
+        <p></p>
+        <span class="col-md-2">键入员工数据:</span>
+        <p></p>
+        姓名：<input type="text"  id="inputName" placeholder="ex:小明" >
+        公积金率：<input type="text"  id="inputHouseRate" placeholder="ex:0.07" >
+        岗位工资：<input type="text"  id="inputBasePay" placeholder="ex:27000" >
+        绩效评价：<input type="text"  id="inputPerformance" placeholder="ex:C" >
+        <p></p>
+        <button type="button" class="btn btn-default" onclick="getStaffInputFromTypeIn()"><p>确认</p></button>
+
+      </div>
+      <hr>
+    </div>
+
+
+
+  <div class="container well" id="second" style="position:relative;top:20px;">
+    <h1>收入详情</h1>
+    <table id="收入详情" class="table table-striped">
+
+     <thead>
+       <tr>
+       </tr>
+       <tr>
+          <th>姓名</th>
+          <th>岗位工资</th>
+          <th>绩效工资</th>
+          <th>五险一金（个人）</th>
+          <th>五险一金（单位）</th>
+          <th>税前收入</th>
+          <th>扣税</th>
+          <th>税后收入</th>
+        </tr>
+     </thead>
+     <tbody>
+       <tr></tr>
+     </tbody>
+  </table>
+
+<h2>五险一金</h2>
+
+
+  <table id="五险一金" class="table table-striped">
+   <thead>
+     <tr>
+     </tr>
+     <tr>
+       <th>姓名</th>
+        <th>养老</th>
+        <th>医疗</th>
+        <th>失业</th>
+        <th>生育</th>
+        <th>工伤</th>
+        <th>住房</th>
+        <th>总计</th>
+      </tr>
+   </thead>
+   <tbody>
+     <tr></tr>
+   </tbody>
+</table>
+  </div>
+  </body>
+  <script>
+  $("#inputName").val("");
+  $("#inputHouseRate").val("");
+  $("#inputBasePay").val("");
+  $("#inputName").val("");
+  $("#inputPerformance").val("");
+
+  $("#本市职工月平均工资").val("");
+  $("#个税税率").val("");
+  $("#绩效工资标准").val("");
+  $("#五险费率").val("");
+  $("#员工名单").val("");
+  var salaryWithoutTax = 3500;
+  var data;
+  var insurenceRate;
+  var taxRate;
+  var performancePay;
+  var averageSalary;
+  var staffs;
+  function handleFileSelect1(evt) {
+    var file = evt.target.files[0];
+
+    Papa.parse(file, {
+      header: true,
+      dynamicTyping: true,
+      complete: function(results) {
+        averageSalary = results.data[0]["本市职工月平均工资"]
+        console.log(averageSalary)
+      }
+    });
+  }
+
+  function handleFileSelect2(evt) {
+    var file = evt.target.files[0];
+
+    Papa.parse(file, {
+      header: true,
+      dynamicTyping: true,
+      complete: function(results) {
+        taxRate = results.data[0];
+        console.log(taxRate)
+        // for(i in results.data[0])
+        // {
+        //   console.log(i);
+        //   console.log(results.data[0][i])
+        // }
+      }
+    });
+  }
+
+
+    function handleFileSelect3(evt) {
+      var file = evt.target.files[0];
+
+      Papa.parse(file, {
+        header: true,
+        dynamicTyping: true,
+        complete: function(results) {
+          performancePay = results.data[0];
+          console.log(performancePay)
+        }
+      });
+    }
+
+
+      function handleFileSelect4(evt) {
+        var file = evt.target.files[0];
+
+        Papa.parse(file, {
+          header: true,
+          dynamicTyping: true,
+          complete: function(results) {
+            insurenceRate = results.data;
+            console.log(insurenceRate)
+          }
+        });
+      }
+
+
+        function handleFileSelect5(evt) {
+          var file = evt.target.files[0];
+
+          Papa.parse(file, {
+            header: true,
+            dynamicTyping: true,
+            complete: function(results) {
+              staffs = results.data;
+              console.log(staffs)
+            }
+          });
+        }
+
+  $(document).ready(function(){
+    $("#本市职工月平均工资").change(handleFileSelect1);
+    $("#个税税率").change(handleFileSelect2);
+    $("#绩效工资标准").change(handleFileSelect3);
+    $("#五险费率").change(handleFileSelect4);
+    $("#员工名单").change(handleFileSelect5);
+  });
+
+  function getStaffInputFromTypeIn(){
+    $("#收入详情 tbody").html("");
+    $("#五险一金 tbody").html("");
+    var staffInfo = getPersonalInput($("#inputName").val(),parseFloat($("#inputHouseRate").val()),parseFloat($("#inputBasePay").val()),$("#inputPerformance").val());
+    // console.log($("#inputName").val());
+    // console.log(parseFloat($("#inputHouseRate").val()));
+    // console.log(parseFloat($("#inputBasePay").val()));
+    // console.log($("#inputPerformance").val());
+    var newTr = "<tr><td>"+staffInfo["name"]+"</td><td>"+staffInfo["income"]["岗位工资"]+"</td><td>"
+    +staffInfo["income"]["绩效工资"]+"</td><td>"+staffInfo["income"]["五险一金(个人)"]+"</td><td>"
+    +staffInfo["income"]["五险一金(单位)"]+"</td><td>"+staffInfo["income"]["税前收入"]+"</td><td>"
+    +staffInfo["income"]["扣税"]+"</td><td>"+staffInfo["income"]["税后收入"]+"</td></tr>";
+    var newTr1 = "<tr><td>"+staffInfo["name"]+"(个人)</td><td>"+staffInfo["insurenceDetail"][1]["养老保险"]+"</td><td>"
+    +staffInfo["insurenceDetail"][1]["医疗保险"]+"</td><td>"+staffInfo["insurenceDetail"][1]["失业保险"]+"</td><td>"
+    +staffInfo["insurenceDetail"][1]["生育保险"]+"</td><td>"+staffInfo["insurenceDetail"][1]["工伤保险"]+"</td><td>"
+    +staffInfo["insurenceDetail"][1]["住房公积金"]+"</td><td>"+staffInfo["insurenceDetail"][1]["总计"]+"</td></tr>";
+    var newTr2 = "<tr><td>"+staffInfo["name"]+"（单位）</td><td>"+staffInfo["insurenceDetail"][0]["养老保险"]+"</td><td>"
+    +staffInfo["insurenceDetail"][0]["医疗保险"]+"</td><td>"+staffInfo["insurenceDetail"][0]["失业保险"]+"</td><td>"
+    +staffInfo["insurenceDetail"][0]["生育保险"]+"</td><td>"+staffInfo["insurenceDetail"][0]["工伤保险"]+"</td><td>"
+    +staffInfo["insurenceDetail"][0]["住房公积金"]+"</td><td>"+staffInfo["insurenceDetail"][0]["总计"]+"</td></tr>";
+    $("#收入详情 tbody:last").append(newTr);
+    $("#五险一金 tbody:last").append(newTr1);
+    $("#五险一金 tbody:last").append(newTr);
+  }
+
+  function getStaffInput(){
+    $("#收入详情 tbody").html("");
+    $("#五险一金 tbody").html("");
+    var staffsInputs = new Array();
+    for(staff in staffs){
+      staffsInputs[staff] = getPersonalInput(staffs[staff]["姓名"],staffs[staff]["公积金"],staffs[staff]["基本工资"],staffs[staff]["绩效评分"]);
+    }
+    // console.log(staffsInputs);
+
+    for(index in staffsInputs){
+      var newTr = "<tr><td>"+staffsInputs[index]["name"]+"</td><td>"+staffsInputs[index]["income"]["岗位工资"]+"</td><td>"
+      +staffsInputs[index]["income"]["绩效工资"]+"</td><td>"+staffsInputs[index]["income"]["五险一金(个人)"]+"</td><td>"
+      +staffsInputs[index]["income"]["五险一金(单位)"]+"</td><td>"+staffsInputs[index]["income"]["税前收入"]+"</td><td>"
+      +staffsInputs[index]["income"]["扣税"]+"</td><td>"+staffsInputs[index]["income"]["税后收入"]+"</td></tr>";
+      var newTr1 = "<tr><td>"+staffsInputs[index]["name"]+"(个人)</td><td>"+staffsInputs[index]["insurenceDetail"][1]["养老保险"]+"</td><td>"
+      +staffsInputs[index]["insurenceDetail"][1]["医疗保险"]+"</td><td>"+staffsInputs[index]["insurenceDetail"][1]["失业保险"]+"</td><td>"
+      +staffsInputs[index]["insurenceDetail"][1]["生育保险"]+"</td><td>"+staffsInputs[index]["insurenceDetail"][1]["工伤保险"]+"</td><td>"
+      +staffsInputs[index]["insurenceDetail"][1]["住房公积金"]+"</td><td>"+staffsInputs[index]["insurenceDetail"][1]["总计"]+"</td></tr>";
+      var newTr2 = "<tr><td>"+staffsInputs[index]["name"]+"(单位)</td><td>"+staffsInputs[index]["insurenceDetail"][0]["养老保险"]+"</td><td>"
+      +staffsInputs[index]["insurenceDetail"][0]["医疗保险"]+"</td><td>"+staffsInputs[index]["insurenceDetail"][0]["失业保险"]+"</td><td>"
+      +staffsInputs[index]["insurenceDetail"][0]["生育保险"]+"</td><td>"+staffsInputs[index]["insurenceDetail"][0]["工伤保险"]+"</td><td>"
+      +staffsInputs[index]["insurenceDetail"][0]["住房公积金"]+"</td><td>"+staffsInputs[index]["insurenceDetail"][0]["总计"]+"</td></tr>";
+      $("#收入详情 tbody:last").append(newTr);
+      $("#五险一金 tbody:last").append(newTr1);
+      $("#五险一金 tbody:last").append(newTr2);
+    }
+  }
+
+  function getPersonalInput(name,houseRate,basePay,performance){
+    var person = {"name":"name"};
+    person["name"] = name;
+    person["insurenceDetail"] = getInsurence(houseRate,basePay);
+    person["income"] = {};
+    person["income"]["岗位工资"] = basePay;
+    person["income"]["绩效工资"] = getPerformancePay(performance);
+    person["income"]["五险一金(个人)"] = person["insurenceDetail"][1]["总计"];
+    person["income"]["五险一金(单位)"] = person["insurenceDetail"][0]["总计"];
+    person["income"]["税前收入"] = person["income"]["岗位工资"] + person["income"]["绩效工资"] - person["income"]["五险一金(个人)"]
+    person["income"]["扣税"] = getTax(person["income"]["税前收入"]-salaryWithoutTax).toFixed(2);
+    person["income"]["税后收入"] = (person["income"]["税前收入"] - person["income"]["扣税"]).toFixed(2);
+    // console.log(person);
+    return person;
+
+  }
+
+  function getInsurence(houseRate,basePay){
+    var insurence = new Array();
+    insurence[0] = {};
+    insurence[1] = {};
+    var base;
+    var upperBounds = averageSalary*3;
+    var lowerBounds = averageSalary*0.6;
+    if(basePay>upperBounds){
+      base = upperBounds;
+    }
+    else if (basePay<lowerBounds) {
+      base = lowerBounds;
+    }
+    else{
+      base = basePay;
+    }
+    insurence[0]["养老保险"] = Math.round(base * insurenceRate[0]["养老保险"]*100)/100;
+    insurence[1]["养老保险"] = Math.round(base * insurenceRate[1]["养老保险"]*100)/100;
+    insurence[0]["医疗保险"] = Math.round(base * insurenceRate[0]["医疗保险"]*100)/100;
+    insurence[1]["医疗保险"] = Math.round(base * insurenceRate[1]["医疗保险"]*100)/100;
+    insurence[0]["失业保险"] = Math.round(base * insurenceRate[0]["失业保险"]*100)/100;
+    insurence[1]["失业保险"] = Math.round(base * insurenceRate[1]["失业保险"]*100)/100;
+    insurence[0]["工伤保险"] = Math.round(base * insurenceRate[0]["工伤保险"]*100)/100;
+    insurence[1]["工伤保险"] = Math.round(base * insurenceRate[1]["工伤保险"]*100)/100;
+    insurence[0]["生育保险"] = Math.round(base * insurenceRate[0]["生育保险"]*100)/100;
+    insurence[1]["生育保险"] = Math.round(base * insurenceRate[1]["生育保险"]*100)/100;
+    insurence[0]["住房公积金"] = Math.round(base * houseRate*100)/100;
+    insurence[1]["住房公积金"] = Math.round(base * houseRate*100)/100;
+    insurence[0]["总计"] = insurence[0]["养老保险"] + insurence[0]["医疗保险"] + insurence[0]["失业保险"] + insurence[0]["工伤保险"] + insurence[0]["生育保险"] + insurence[0]["住房公积金"];
+    insurence[1]["总计"] = insurence[1]["养老保险"] + insurence[1]["医疗保险"] + insurence[1]["失业保险"] + insurence[1]["工伤保险"] + insurence[1]["生育保险"] + insurence[1]["住房公积金"];
+    insurence[0]["养老保险"] = insurence[0]["养老保险"].toFixed(2);
+    insurence[1]["养老保险"] = insurence[1]["养老保险"].toFixed(2);
+    insurence[0]["医疗保险"] = insurence[0]["医疗保险"].toFixed(2);
+    insurence[1]["医疗保险"] = insurence[1]["医疗保险"].toFixed(2);
+    insurence[0]["失业保险"] = insurence[0]["失业保险"].toFixed(2);
+    insurence[1]["失业保险"] = insurence[1]["失业保险"].toFixed(2);
+    insurence[0]["工伤保险"] = insurence[0]["工伤保险"].toFixed(2);
+    insurence[1]["工伤保险"] = insurence[1]["工伤保险"].toFixed(2);
+    insurence[0]["生育保险"] = insurence[0]["生育保险"].toFixed(2);
+    insurence[1]["生育保险"] = insurence[1]["生育保险"].toFixed(2);
+    insurence[0]["住房公积金"] = insurence[0]["住房公积金"].toFixed(2);
+    insurence[1]["住房公积金"] = insurence[1]["住房公积金"].toFixed(2);
+    insurence[0]["总计"] = insurence[0]["总计"].toFixed(2);
+    insurence[1]["总计"] = insurence[1]["总计"].toFixed(2);
+    return insurence;
+  }
+
+  function getPerformancePay(performance){
+    var pay = 0;
+    for(i in performancePay){
+      if(i==performance){
+        pay = performancePay[i];
+      }
+    }
+    return pay;
+  }
+
+  function getTax(salary){
+    var tax = 0;
+    var pre = 0;
+    var preRate = 0;
+    for(i in taxRate){
+      if(salary>i){
+        tax = tax + (i-pre) * preRate;
+        preRate = taxRate[i];
+        pre = i;
+      }
+      else{
+        tax = tax + (salary-pre) * preRate;
+        break;
+      }
+    }
+    return Math.round(tax*100)/100;
+  }
+</script>
+
+
+  </html>
